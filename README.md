@@ -2,4 +2,5 @@
 project for CPSC 471\
 Group Members:\
 Anthony Serrato anthony17@csu.fullerton.edu\
-...
+Hannah Longstreth longstreth@csu.fullerton.edu\
+
