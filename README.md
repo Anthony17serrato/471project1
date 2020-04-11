@@ -7,9 +7,9 @@ Hannah Longstreth longstreth@csu.fullerton.edu\
 # How to run:
 in sendfile directory:\
 initiate server:\
->python sendfileserv.py 1234\
+> python sendfileserv.py 1234\
 initiate client:\
->python sendfilecli.py file.txt
+> python sendfilecli.py file.txt
 
 
 
