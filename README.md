@@ -4,6 +4,10 @@ Group Members:\
 Anthony Serrato anthony17@csu.fullerton.edu\
 Hannah Longstreth longstreth@csu.fullerton.edu\
 
+# Language:
+Python
+
+
 # How to run:
 in sendfile directory:\
 initiate server:\
