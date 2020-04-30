@@ -17,13 +17,13 @@ if len(sys.argv) < 2:
 serverAddr = "localhost"
 
 # Server port
-serverPort = 1234
+serverPort = int(sys.argv[1])
 
-# The name of the file
-fileName = sys.argv[1]
+# # The name of the file
+# fileName = sys.argv[1]
 
-# Open the file
-fileObj = open(fileName, "r")
+# # Open the file
+# fileObj = open(fileName, "r")
 
 # Create a TCP socket
 connSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -31,53 +31,61 @@ connSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # Connect to the server
 connSock.connect((serverAddr, serverPort))
 
-# The number of bytes sent
-numSent = 0
+print "Connnected to server"
 
-# The file data
-fileData = None
+# # The number of bytes sent
+# numSent = 0
 
-# Keep sending until all is sent
-while True:
+# # The file data
+# fileData = None
+
+# # Keep sending until all is sent
+# while True:
 	
-	# Read 65536 bytes of data
-	fileData = fileObj.read(65536)
+# 	# Read 65536 bytes of data
+# 	fileData = fileObj.read(65536)
 	
-	# Make sure we did not hit EOF
-	if fileData:
+# 	# Make sure we did not hit EOF
+# 	if fileData:
 		
 			
-		# Get the size of the data read
-		# and convert it to string
-		dataSizeStr = str(len(fileData))
+# 		# Get the size of the data read
+# 		# and convert it to string
+# 		dataSizeStr = str(len(fileData))
 		
-		# Prepend 0's to the size string
-		# until the size is 10 bytes
-		while len(dataSizeStr) < 10:
-			dataSizeStr = "0" + dataSizeStr
+# 		# Prepend 0's to the size string
+# 		# until the size is 10 bytes
+# 		while len(dataSizeStr) < 10:
+# 			dataSizeStr = "0" + dataSizeStr
 	
 	
-		# Prepend the size of the data to the
-		# file data.
-		fileData = dataSizeStr + fileData	
+# 		# Prepend the size of the data to the
+# 		# file data.
+# 		fileData = dataSizeStr + fileData	
 		
-		# The number of bytes sent
-		numSent = 0
+# 		# The number of bytes sent
+# 		numSent = 0
 		
-		# Send the data!
-		while len(fileData) > numSent:
-			numSent += connSock.send(fileData[numSent:])
+# 		# Send the data!
+# 		while len(fileData) > numSent:
+# 			numSent += connSock.send(fileData[numSent:])
 	
-	# The file has been read. We are done
-	else:
-		break
+# 	# The file has been read. We are done
+# 	else:
+# 		break
 
 
-print "Sent ", numSent, " bytes."
+# print "Sent ", numSent, " bytes."
+
+status = True
+while status:
+	userinput = str(raw_input("ftp> "))
+	if(userinput=="quit"):
+		# Close the socket and the file
+		connSock.close()
+		#fileObj.close()
+		status = False
 	
-# Close the socket and the file
-connSock.close()
-fileObj.close()
 	
 
 
