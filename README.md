@@ -11,9 +11,9 @@ Python
 # How to run(Linux):
 in sendfile directory:\
 initiate server:\
-$ python sendfileserv.py 1234\
+$ python ftpserv.py 1234\
 initiate client:(in a separate window)\
-$ python sendfilecli.py 1234\
+$ python ftpcli.py localhost 1234\
 $ ftp> get <file name> (downloads file <file name> from the server)\
 $ ftp> put <filename> (uploads file <file name> to the server)\
 $ ftp> ls (lists files on the server)\
