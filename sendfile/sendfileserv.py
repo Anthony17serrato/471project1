@@ -18,6 +18,7 @@ welcomeSock.bind(('', listenPort))
 
 # Start listening on the socket
 welcomeSock.listen(1)
+print "The server is ready to recieve..."
 
 # ************************************************
 # Receives the specified number of bytes
