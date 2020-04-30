@@ -6,18 +6,32 @@
 # *****************************************************
 
 import socket
+import sys
 
 # The port on which to listen
-listenPort = 1234
+listenPort = int(sys.argv[1])
+#data port
+dataPort = listenPort+1
 
-# Create a welcome socket. 
-welcomeSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# Create a control socket. 
+controlSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Bind the socket to the port
-welcomeSock.bind(('', listenPort))
+controlSock.bind(('', listenPort))
 
 # Start listening on the socket
-welcomeSock.listen(1)
+controlSock.listen(1)
+
+#create data socket.
+dataSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# Bind the socket to the port
+dataSock.bind(('', dataPort))
+
+# Start listening on the socket
+dataSock.listen(1)
+
+
 print "The server is ready to recieve..."
 
 # ************************************************
@@ -56,7 +70,7 @@ while True:
 	print "Waiting for connections..."
 		
 	# Accept connections
-	clientSock, addr = welcomeSock.accept()
+	clientSock, addr = dataSock.accept()
 	
 	print "Accepted connection from client: ", addr
 	print "\n"
