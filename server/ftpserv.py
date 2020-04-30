@@ -7,6 +7,7 @@
 
 import socket
 import sys
+import commands
 
 # The port on which to listen
 listenPort = int(sys.argv[1])
@@ -51,7 +52,7 @@ def recvAll(sock, numBytes):
 	
 	# Keep receiving till all is received
 	while len(recvBuff) < numBytes:
-		
+		print "recieving..."
 		# Attempt to receive bytes
 		tmpBuff =  sock.recv(numBytes)
 		
@@ -68,12 +69,17 @@ def recvAll(sock, numBytes):
 while True:
 	
 	print "Waiting for connections..."
+
+	# Run ls command, get output, and print it
+	for line in commands.getstatusoutput('ls -l'):
+		print line
 		
 	# Accept connections
 	clientSock, addr = dataSock.accept()
 	
 	print "Accepted connection from client: ", addr
 	print "\n"
+
 	
 	# The buffer to all data received from the
 	# the client.
@@ -97,12 +103,20 @@ while True:
 	fileSize = int(fileSizeBuff)
 	
 	print "The file size is ", fileSize
+
+	#Recieve the next 31 bytes indicating name of file
+	fileNameBuff = ""
+	fileNameBuff = recvAll(clientSock, 31)
 	
 	# Get the file data
 	fileData = recvAll(clientSock, fileSize)
 	
-	print "The file data is: "
-	print fileData
+	# print "The file data is: "
+	# print fileData
+
+	f = open(fileNameBuff.strip(), "w")
+	f.write(fileData)
+	f.close()
 		
 	# Close our side
 	clientSock.close()

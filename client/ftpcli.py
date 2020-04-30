@@ -31,6 +31,7 @@ print "Connnected to server"
 
 status = True
 while status:
+
 	userinput = str(raw_input("ftp> "))
 	if(userinput=="quit"):
 		# Close the control socket and the file
@@ -55,29 +56,34 @@ while status:
 		# The file data
 		fileData = None
 
+		# Get the size of the data
+		# and convert it to string
+		dataMetadata = str(os.path.getsize(fileName))
+		sentSize= dataMetadata
+		
+		# Prepend 0's to the size string
+		# until the size is 10 bytes
+		while len(dataMetadata) < 10:
+			dataMetadata = "0" + dataMetadata
+		# Prepend " " to filename untill 31 bytes
+		#filename cannot be larger than 31 characters
+		while len(fileName) < 31:
+			fileName = " " + fileName
+		#add filename to metadata
+		dataMetadata = dataMetadata + fileName;
+
 		# Keep sending until all is sent
 		while True:
 	
-			# Read 65536 bytes of data
-			fileData = fileObj.read(65536)
+			# Read data
+			fileData = fileObj.read(1024)
 	
 			# Make sure we did not hit EOF
 			if fileData:
-		
-			
-				# Get the size of the data read
-				# and convert it to string
-				dataSizeStr = str(len(fileData))
-		
-				# Prepend 0's to the size string
-				# until the size is 10 bytes
-				while len(dataSizeStr) < 10:
-					dataSizeStr = "0" + dataSizeStr
-	
-	
 				# Prepend the size of the data to the
 				# file data.
-				fileData = dataSizeStr + fileData	
+				fileData = dataMetadata + fileData	
+				dataMetadata=""
 		
 				# The number of bytes sent
 				numSent = 0
@@ -91,7 +97,7 @@ while status:
 				break
 		fileObj.close()
 		dataSock.close()
-		print "Sent ", numSent, " bytes."
+		print "Sent ", sentSize, " bytes."
 	elif (userinput.find("ls", 0,2)!= -1):
 		print "ls Command"
 	else:
