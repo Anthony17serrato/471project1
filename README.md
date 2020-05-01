@@ -3,7 +3,8 @@ project for CPSC 471\
 Group Members:\
 Anthony Serrato anthony17@csu.fullerton.edu\
 Hannah Longstreth longstreth@csu.fullerton.edu\
-
+Traci Trojan   tracitrojan@csu.fullerton.edu\
+Jasmine        msjas@csu.fullerton.edu\
 # Language:
 Python
 
