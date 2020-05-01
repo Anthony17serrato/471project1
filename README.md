@@ -20,6 +20,7 @@ you should now see the file in the server directory\
 $ ftp> ls (lists files on the server)\
 $ ftp> quit (disconnects from the server and exits)\
 
-
+# Summary:
+This ftp client/server is capable of sending any file type large or small using a control and data connection. All ftp Commands were tested and running properly. the only restriction is that filenames cannot excede 31 characters.
 
 

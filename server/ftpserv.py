@@ -7,6 +7,7 @@
 
 import socket
 import sys
+import os
 import commands
 
 # The port on which to listen
@@ -23,24 +24,16 @@ controlSock.bind(('', listenPort))
 # Start listening on the socket
 controlSock.listen(1)
 
-#create data socket.
-dataSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Bind the socket to the port
-dataSock.bind(('', dataPort))
-
-# Start listening on the socket
-dataSock.listen(1)
 
 
-print "The server is ready to recieve..."
-
+print "The server control is ready to recieve..."
 print "Waiting for connections..."
-
 clientControlSock, addrControl = controlSock.accept()
 
-print "Accepted connection from client: ", addrControl
+print "Accepted control connection from client: ", addrControl
 print "\n"
+
+
 
 # ************************************************
 # Receives the specified number of bytes
@@ -74,6 +67,7 @@ def recvAll(sock, numBytes):
 		
 # Accept connections forever
 while True:
+	#recieve first byte which contains the command
 	cmnd = recvAll(clientControlSock,1)
 
 	if(cmnd == "l"):
@@ -90,10 +84,19 @@ while True:
 		clientControlSock.send(listoffiles)
 	
 	elif(cmnd == "p"):	
+		#create data socket.
+		dataSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+		# Bind the socket to the port
+		dataSock.bind(('', dataPort))
+
+		# Start listening on the socket
+		dataSock.listen(1)
+
 		# Accept connections
 		clientSock, addr = dataSock.accept()
 		
-		print "Accepted connection from client: ", addr
+		print "Accepted data connection from client: ", addr
 		print "\n"
 
 		
@@ -127,8 +130,8 @@ while True:
 		# Get the file data
 		fileData = recvAll(clientSock, fileSize)
 		
-		# print "The file data is: "
-		print "File Uploaded..."
+		# print success
+		print "SUCCESS: File Uploaded..."
 
 		f = open(fileNameBuff.strip(), "w")
 		f.write(fileData)
@@ -136,10 +139,76 @@ while True:
 			
 		# Close our side
 		clientSock.close()
+		#Close data socket
+		dataSock.close()
 	elif(cmnd == "g"):
-		#TODO: write get command
-		print "get command"
+		#recieve the next 31 bytes which contain the name of the file to be returned
+		fileNameBuff = recvAll(clientControlSock, 31)
+
+		# Create a TCP  data socket
+		dataSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+		# Connect to the client
+		dataSock.connect((addrControl[0], dataPort))
+		try:
+			# Open the file
+			fileObj = open(fileNameBuff.strip(), "r")
+		except IOError:
+			print "FALURE: File does not exist"
+			dataSock.send("f")
+			dataSock.close()
+			continue
+		# The number of bytes sent
+		numSent = 0
+
+		# The file data
+		fileData = None
+
+		# Get the size of the data
+		# and convert it to string
+		dataMetadata = str(os.path.getsize(fileNameBuff.strip()))
+		sentSize= dataMetadata
+		
+		# Prepend 0's to the size string
+		# until the size is 10 bytes
+		while len(dataMetadata) < 10:
+			dataMetadata = "0" + dataMetadata
+		#add filename to metadata
+		dataMetadata = dataMetadata + fileNameBuff;
+
+		# Keep sending until all is sent
+		while True:
+	
+			# Read data
+			fileData = fileObj.read(1024)
+	
+			# Make sure we did not hit EOF
+			if fileData:
+				# Prepend the size of the data to the
+				# file data.
+				fileData = dataMetadata + fileData	
+				dataMetadata=""
+		
+				# The number of bytes sent
+				numSent = 0
+		
+				# Send the data!
+				while len(fileData) > numSent:
+					numSent += dataSock.send(fileData[numSent:])
+	
+			# The file has been read. We are done
+			else:
+				break
+		fileObj.close()
+		dataSock.close()
+		print "SUCCESS: Sent ", sentSize, " bytes."
 	elif(cmnd == "q"):
 		# Close our side
 		clientControlSock.close()
-		break
+		print "closed connection from client",addrControl
+		print "Waiting for connections..."
+		clientControlSock, addrControl = controlSock.accept()
+
+		print "Accepted control connection from client: ", addrControl
+		print "\n"
+		

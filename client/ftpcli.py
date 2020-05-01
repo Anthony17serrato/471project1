@@ -68,10 +68,87 @@ while status:
 		# Close the control socket and the file
 		controlSock.close()
 		status = False
-	elif (userinput.find("get ", 0,4)!= -1):
-		#TODO: write get command(retrieve notonclient.txt from server)
-		print "get Command"
+	elif (userinput.find("get ", 0,4)!= -1 and len(userinput)>4):
+		# The name of the file
+		fileName = userinput[4:]
+		# Prepend " " to filename untill 31 bytes
+		#filename cannot be larger than 31 characters
+		while len(fileName) < 31:
+			fileName = " " + fileName
+		controlSock.send(("g"+fileName))
+		#create data socket.
+		dataSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+		# Bind the socket to the port
+		dataSock.bind(('', dataPort))
+
+		# Start listening on the socket
+		dataSock.listen(1)
+
+		# Accept connections
+		clientSock, addr = dataSock.accept()
+		
+		print "Accepted data connection from client: ", addr
+		print "\n"
+
+		
+		# The buffer to all data received from the
+		# the client.
+		fileData = ""
+		
+		# The temporary buffer to store the received
+		# data.
+		recvBuff = ""
+		
+		# The size of the incoming file
+		fileSize = 0	
+		
+		# The buffer containing the file size
+		fileSizeBuff = ""
+		
+		# Receive the first 10 bytes indicating the
+		# size of the file
+		fileSizeBuff = recvAll(clientSock, 10)
+
+		if(fileSizeBuff == "f"):
+			print "Failed: File not on server"
+			# Close our side
+			clientSock.close()
+			#Close data socket
+			dataSock.close()
+			continue
+			
+		# Get the file size
+		fileSize = int(fileSizeBuff)
+
+		#Recieve the next 31 bytes indicating name of file
+		fileNameBuff = ""
+		fileNameBuff = recvAll(clientSock, 31)
+		
+		# Get the file data
+		fileData = recvAll(clientSock, fileSize)
+		
+		# print "The file data is: "
+		print "File Downloaded: ", fileNameBuff.strip(), "\nBytes transfered: ", fileSize
+
+		f = open(fileNameBuff.strip(), "w")
+		f.write(fileData)
+		f.close()
+			
+		# Close our side
+		clientSock.close()
+		#Close data socket
+		dataSock.close()
 	elif (userinput.find("put ", 0,4)!= -1 and len(userinput)>4):
+		# The name of the file
+		fileName = userinput[4:]
+		try:
+			# Open the file
+			fileObj = open(fileName, "r")
+		except IOError:
+			print "Failed: file does not exist"
+			continue
+
 		controlSock.send("p")
 		# Create a TCP  data socket
 		dataSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -79,10 +156,7 @@ while status:
 		# Connect to the server
 		dataSock.connect((serverAddr, dataPort))
 
-		# The name of the file
-		fileName = userinput[4:]
-		# Open the file
-		fileObj = open(fileName, "r")
+		
 		# The number of bytes sent
 		numSent = 0
 
@@ -130,7 +204,7 @@ while status:
 				break
 		fileObj.close()
 		dataSock.close()
-		print "Sent ", sentSize, " bytes."
+		print "Sent file:", fileName.strip(), "\nSize: ", sentSize, " bytes."
 	elif (userinput.find("ls", 0,2)!= -1):
 		controlSock.send("l")
 		# Receive the first 10 bytes indicating the
