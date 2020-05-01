@@ -35,6 +35,13 @@ dataSock.listen(1)
 
 print "The server is ready to recieve..."
 
+print "Waiting for connections..."
+
+clientControlSock, addrControl = controlSock.accept()
+
+print "Accepted connection from client: ", addrControl
+print "\n"
+
 # ************************************************
 # Receives the specified number of bytes
 # from the specified socket
@@ -67,57 +74,72 @@ def recvAll(sock, numBytes):
 		
 # Accept connections forever
 while True:
-	
-	print "Waiting for connections..."
+	cmnd = recvAll(clientControlSock,1)
 
-	# Run ls command, get output, and print it
-	for line in commands.getstatusoutput('ls -l'):
-		print line
+	if(cmnd == "l"):
+		listoffiles = ""
+		# Run ls command, get output, and print it
+		for line in commands.getstatusoutput('ls -l'):
+			listoffiles = listoffiles + "\n" + str(line)
+		sizeofresponse = str(len(listoffiles))
+		# Prepend 0's to the size string
+		# until the size is 10 bytes
+		while len(sizeofresponse) < 10:
+			sizeofresponse = "0" + sizeofresponse
+		listoffiles = sizeofresponse + listoffiles
+		clientControlSock.send(listoffiles)
+	
+	elif(cmnd == "p"):	
+		# Accept connections
+		clientSock, addr = dataSock.accept()
 		
-	# Accept connections
-	clientSock, addr = dataSock.accept()
-	
-	print "Accepted connection from client: ", addr
-	print "\n"
+		print "Accepted connection from client: ", addr
+		print "\n"
 
-	
-	# The buffer to all data received from the
-	# the client.
-	fileData = ""
-	
-	# The temporary buffer to store the received
-	# data.
-	recvBuff = ""
-	
-	# The size of the incoming file
-	fileSize = 0	
-	
-	# The buffer containing the file size
-	fileSizeBuff = ""
-	
-	# Receive the first 10 bytes indicating the
-	# size of the file
-	fileSizeBuff = recvAll(clientSock, 10)
 		
-	# Get the file size
-	fileSize = int(fileSizeBuff)
-	
-	print "The file size is ", fileSize
-
-	#Recieve the next 31 bytes indicating name of file
-	fileNameBuff = ""
-	fileNameBuff = recvAll(clientSock, 31)
-	
-	# Get the file data
-	fileData = recvAll(clientSock, fileSize)
-	
-	# print "The file data is: "
-	# print fileData
-
-	f = open(fileNameBuff.strip(), "w")
-	f.write(fileData)
-	f.close()
+		# The buffer to all data received from the
+		# the client.
+		fileData = ""
 		
-	# Close our side
-	clientSock.close()
-	
+		# The temporary buffer to store the received
+		# data.
+		recvBuff = ""
+		
+		# The size of the incoming file
+		fileSize = 0	
+		
+		# The buffer containing the file size
+		fileSizeBuff = ""
+		
+		# Receive the first 10 bytes indicating the
+		# size of the file
+		fileSizeBuff = recvAll(clientSock, 10)
+			
+		# Get the file size
+		fileSize = int(fileSizeBuff)
+		
+		print "The file size is ", fileSize
+
+		#Recieve the next 31 bytes indicating name of file
+		fileNameBuff = ""
+		fileNameBuff = recvAll(clientSock, 31)
+		
+		# Get the file data
+		fileData = recvAll(clientSock, fileSize)
+		
+		# print "The file data is: "
+		print "File Uploaded..."
+
+		f = open(fileNameBuff.strip(), "w")
+		f.write(fileData)
+		f.close()
+			
+		# Close our side
+		clientSock.close()
+	elif(cmnd == "g"):
+		#TODO: write get command
+		print "get command"
+	elif(cmnd == "q"):
+		# Close our side
+		clientControlSock.close()
+		break

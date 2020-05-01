@@ -9,6 +9,36 @@ import socket
 import os
 import sys
 
+# ************************************************
+# Receives the specified number of bytes
+# from the specified socket
+# @param sock - the socket from which to receive
+# @param numBytes - the number of bytes to receive
+# @return - the bytes received
+# *************************************************
+def recvAll(sock, numBytes):
+
+	# The buffer
+	recvBuff = ""
+	
+	# The temporary buffer
+	tmpBuff = ""
+	
+	# Keep receiving till all is received
+	while len(recvBuff) < numBytes:
+		print "recieving..."
+		# Attempt to receive bytes
+		tmpBuff =  sock.recv(numBytes)
+		
+		# The other side has closed the socket
+		if not tmpBuff:
+			break
+		
+		# Add the received bytes to the buffer
+		recvBuff += tmpBuff
+	
+	return recvBuff
+
 # Command line checks 
 if len(sys.argv) < 2:
 	print "USAGE python " + sys.argv[0] + " <FILE NAME>" 
@@ -34,12 +64,15 @@ while status:
 
 	userinput = str(raw_input("ftp> "))
 	if(userinput=="quit"):
+		controlSock.send("q")
 		# Close the control socket and the file
 		controlSock.close()
 		status = False
 	elif (userinput.find("get ", 0,4)!= -1):
+		#TODO: write get command(retrieve notonclient.txt from server)
 		print "get Command"
 	elif (userinput.find("put ", 0,4)!= -1 and len(userinput)>4):
+		controlSock.send("p")
 		# Create a TCP  data socket
 		dataSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -99,8 +132,14 @@ while status:
 		dataSock.close()
 		print "Sent ", sentSize, " bytes."
 	elif (userinput.find("ls", 0,2)!= -1):
-		print "ls Command"
+		controlSock.send("l")
+		# Receive the first 10 bytes indicating the
+		# size of the file
+		fileSizeBuff = recvAll(controlSock, 10)
+			
+		# Get the file size
+		fileSize = int(fileSizeBuff)
+		cmnd = recvAll(controlSock,fileSize)
+		print cmnd
 	else:
 		print "invalid Command"
-
-
